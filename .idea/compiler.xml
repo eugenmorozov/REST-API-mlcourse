@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="REST-API-mlcourse" target="1.5" />
+      <module name="REST-API-mlcourse" target="9" />
     </bytecodeTargetLevel>
   </component>
 </project>
