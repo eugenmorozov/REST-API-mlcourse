@@ -1,5 +1,5 @@
 drop table if exists tasks cascade;
-create extension if not exists citext;
+create extension if not exists CITEXT;
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL NOT NULL PRIMARY KEY,

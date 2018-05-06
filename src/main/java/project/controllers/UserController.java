@@ -43,9 +43,10 @@ public class UserController{
     public ResponseEntity getProfile(
             @PathVariable("nickname") String nickname
     ){
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(userService.getUserByNickname(nickname));
-        }catch (DataAccessException error){
+        UserModel user = userService.getUserByNickname(nickname);
+        if(user!=null){
+            return ResponseEntity.status(HttpStatus.OK).body(user);
+        }else{
             return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Can't find user by nickname: "+ nickname);
         }
 

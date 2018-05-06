@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS threads (
+	author CITEXT COLLATE "ucs_basic" REFERENCES "users"(nickname) ON DELETE CASCADE,
+	created TIMESTAMP,
+	forum CITEXT COLLATE "ucs_basic" REFERENCES "forums"(slug) ON DELETE CASCADE,
+	id SERIAL NOT NULL PRIMARY KEY,
+	message TEXT DEFAULT '',
+	slug CITEXT COLLATE "ucs_basic" UNIQUE,
+	title TEXT NOT NULL,
+	votes INTEGER DEFAULT 0
+);

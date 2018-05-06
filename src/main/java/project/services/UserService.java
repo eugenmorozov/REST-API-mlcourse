@@ -40,7 +40,7 @@ public class UserService {
 
     public UserModel getUserByNickname(String nickname){
         try {
-            String getQuery = "select * from users where nickname = ?";
+            String getQuery = "select * from users where nickname = ?::citext";
             return jdbcTemplate.queryForObject(getQuery, new Object[]{nickname}, new UserRowMapper());
         }catch(DataAccessException error){
             return null;
