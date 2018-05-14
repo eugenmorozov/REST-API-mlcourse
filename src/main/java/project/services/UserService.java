@@ -38,6 +38,24 @@ public class UserService {
         return (ArrayList<UserModel>) jdbcTemplate.query(getQuery, new Object[]{nickname,email}, new UserRowMapper());
     }
 
+    public ArrayList<UserModel> getUsersByThreadAndPost(String slug,
+                                                        int limit,
+                                                        int since,
+                                                        boolean desc){
+        String getQuery = "SELECT about, email, fullname, nickname FROM users JOIN threads ON users.nickname = threads.author WHERE threads.forum = ?::citext " +
+                "AND users.id > ?";
+        getQuery += " UNION ";
+        getQuery += " SELECT about, email, fullname, nickname FROM users JOIN posts ON users.nickname = posts.author WHERE posts.forum = ?::citext " +
+                "AND users.id > ?";
+        getQuery += " ORDER BY nickname";
+        if(desc){
+            getQuery += " DESC ";
+        }
+        getQuery += " LIMIT ? ";
+        return (ArrayList<UserModel>) jdbcTemplate.query(getQuery,new Object[]{slug, since, slug, since, limit}, new UserRowMapper());
+    }
+
+
     public UserModel getUserByNickname(String nickname){
         try {
             String getQuery = "select * from users where nickname = ?::citext";
@@ -47,20 +65,32 @@ public class UserService {
         }
     }
 
-    public UserModel updateUserByNickname(UserModel user){
+    public UserModel updateUserByNickname(UserModel user, UserModel oldUser){
    
         String createQuery = "UPDATE users SET (about, email, fullname, nickname) = (?, ?, ?, ?) WHERE nickname = ?";
-
+        if(user.getAbout() != null){
+            oldUser.setAbout(user.getAbout() );
+        }
+        if(user.getEmail() != null){
+            oldUser.setEmail(user.getEmail() );
+        }
+        if(user.getFullname() != null){
+            oldUser.setFullname(user.getFullname() );
+        }
+        if(user.getNickname() != null){
+            oldUser.setNickname(user.getNickname() );
+        }
         jdbcTemplate.update(
                 createQuery,
-                user.getAbout(),
-                user.getEmail(),
-                user.getFullname(),
-                user.getNickname(),
-                user.getNickname()
+                oldUser.getAbout(),
+                oldUser.getEmail(),
+                oldUser.getFullname(),
+                oldUser.getNickname(),
+                oldUser.getNickname()
         );
-        return user;
+        return oldUser;
     }
+
 
     public static class UserRowMapper implements RowMapper<UserModel> {
         @Override

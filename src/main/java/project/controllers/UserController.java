@@ -52,17 +52,18 @@ public class UserController{
 
     }
 
-    @PostMapping(path = "/{nickname}/update")
+    @PostMapping(path = "/{nickname}/profile")
     public ResponseEntity updateUser(
             @PathVariable("nickname") String nickname,
             @RequestBody UserModel user
     ){
         user.setNickname(nickname);
-        if (userService.getUserByNickname(nickname) == null){
+        UserModel oldUser = userService.getUserByNickname(nickname);
+        if ( oldUser == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no such user");
         }else{
             try{
-                 return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserByNickname(user) );
+                 return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserByNickname(user, oldUser) );
             }catch (DataAccessException error){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("conflict with another user");
             }

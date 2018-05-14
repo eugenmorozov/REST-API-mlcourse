@@ -13,6 +13,7 @@ import project.services.ForumService;
 import project.services.ThreadService;
 import project.services.UserService;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 @Controller
@@ -81,22 +82,30 @@ public class ForumController {
     }
     @GetMapping(path = "/{slug}/threads")
     public ResponseEntity getThreads(
-            @PathVariable("slug") String slug
+            @PathVariable("slug") String slug,
+            @RequestParam(value = "limit", required = false, defaultValue = "9999") Integer limit,
+            @RequestParam(value = "since", required = false, defaultValue = "1000-01-01 00:00:00.000") Timestamp since,
+            @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc
     ){
-        ArrayList<ThreadModel> threads  = threadService.getThreadsBySlug(slug);
-        if(threads != null){
-            return ResponseEntity.status(HttpStatus.OK).body(threads);
+        if (forumService.getForumBySlug(slug) != null){
+            return ResponseEntity.status(HttpStatus.OK).body(threadService.getThreadsBySlug(slug,limit,since,desc));
         }else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("there's no such forum");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("forum not found");
         }
     }
 
     @GetMapping(path = "/{slug}/users")
     public ResponseEntity getUsers(
-            @PathVariable("slug") String slug
+            @PathVariable("slug") String slug,
+            @RequestParam(value = "limit", required = false, defaultValue = "9999") Integer limit,
+            @RequestParam(value = "since", required = false, defaultValue = "0") int since,
+            @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc
     ){
-        //TODO: write method
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(" ");
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersByThreadAndPost(slug, limit, since, desc));
+        }catch(DataAccessException error){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("there's no such forum");
+        }
     }
 
 }
