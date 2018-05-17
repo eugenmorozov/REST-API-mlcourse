@@ -34,7 +34,7 @@ public class UserService {
     }
 
     public ArrayList<UserModel> getSameUsers(String nickname,String email){
-        String getQuery = "select * from users where nickname = ? or email = ?";
+        String getQuery = "select * from users where nickname = ?::citext or email = ?::citext";
         return (ArrayList<UserModel>) jdbcTemplate.query(getQuery, new Object[]{nickname,email}, new UserRowMapper());
     }
 
@@ -65,9 +65,18 @@ public class UserService {
         }
     }
 
+//public UserModel getUserById(int id){
+//        try {
+//            String getQuery = "select * from users where id = ?";
+//            return jdbcTemplate.queryForObject(getQuery, new Object[]{id}, new UserRowMapper());
+//        }catch(DataAccessException error){
+//            return null;
+//        }
+//    }
+
     public UserModel updateUserByNickname(UserModel user, UserModel oldUser){
-   
-        String createQuery = "UPDATE users SET (about, email, fullname, nickname) = (?, ?, ?, ?) WHERE nickname = ?";
+
+        String createQuery = "UPDATE users SET (about, email, fullname, nickname) = (?::citext, ?::citext, ?::citext, ?::citext) WHERE nickname = ?::citext";
         if(user.getAbout() != null){
             oldUser.setAbout(user.getAbout() );
         }

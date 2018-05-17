@@ -5,8 +5,7 @@ import java.sql.Timestamp;
 
 public class ThreadModel {
     private String author;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private Timestamp created;
+    private String created;
     private String forum;
     private int id;
     private String message;
@@ -18,8 +17,8 @@ public class ThreadModel {
 
     }
 
-    public ThreadModel(String author,
-                       Timestamp created,
+    public ThreadModel(String author, //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                       String created,
                        String forum,
                        int id,
                        String message,
@@ -44,11 +43,11 @@ public class ThreadModel {
         this.author = author;
     }
 
-    public Timestamp getCreated() {
+    public String getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(String created) {
         this.created = created;
     }
 

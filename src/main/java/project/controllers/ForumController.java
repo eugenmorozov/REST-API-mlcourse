@@ -4,8 +4,10 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.SerializationUtils;
 import org.springframework.web.bind.annotation.*;
 
+import project.models.ErrorModel;
 import project.models.ForumModel;
 import project.models.ThreadModel;
 import project.models.UserModel;
@@ -17,7 +19,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 
 @Controller
-@RequestMapping("/forum")
+@RequestMapping("api/forum")
 public class ForumController {
 
     private UserService userService;
@@ -33,15 +35,19 @@ public class ForumController {
     @PostMapping(path = "/create")
     public ResponseEntity create(
             @RequestBody ForumModel forum) {
-        if ( userService.getUserByNickname( forum.getUser() ) == null ) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no such user");
+        UserModel user =  userService.getUserByNickname( forum.getUser() );
+        if (user  == null ) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("no such user"));
         } else {
             try {
                 forum.setPosts(0);
                 forum.setThreads(0);
+                forum.setUser(user.getNickname());
                 forumService.createForum(forum);
-                return ResponseEntity.status(HttpStatus.CREATED).body(forum);
-            } catch (DataAccessException error) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(
+                    forumService.getForumBySlug(forum.getSlug())
+                );
+            } catch (Exception error) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body( forumService.getForumBySlug( forum.getSlug() ) );
             }
@@ -53,19 +59,20 @@ public class ForumController {
             @PathVariable("slug") String slug,
             @RequestBody ThreadModel thread
     ) {
-        if( userService.getUserByNickname( thread.getAuthor() ) != null && forumService.getForumBySlug( slug ) != null) {
+        ForumModel forum = forumService.getForumBySlug( slug );
+        if( userService.getUserByNickname( thread.getAuthor() ) != null &&  forum != null) {
             try {
                 thread.setVotes(0);
-                thread.setForum(slug);
-                System.out.println(thread.getSlug()+thread.getForum()+thread.getCreated().toString());
-                threadService.createThread(thread);
-                return ResponseEntity.status(HttpStatus.CREATED).body(thread);
+                thread.setForum(forum.getSlug());
+                thread.setId(threadService.generateId());
+                return ResponseEntity.status(HttpStatus.CREATED).body(threadService.createThread(thread));
             } catch (DataAccessException error) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body( threadService.getThreadBySlug( thread.getSlug() ) );
-
             }
         }
-        else {return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user or forum doesnt exist");}
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("user or forum doesn't exist"));
+        }
     }
 
     @GetMapping(path = "/{slug}/details")
@@ -76,7 +83,7 @@ public class ForumController {
         if(forum != null) {
             return ResponseEntity.status(HttpStatus.OK).body(forum);
         }else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("not found"));
         }
 
     }
@@ -90,7 +97,7 @@ public class ForumController {
         if (forumService.getForumBySlug(slug) != null){
             return ResponseEntity.status(HttpStatus.OK).body(threadService.getThreadsBySlug(slug,limit,since,desc));
         }else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("forum not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("forum not found"));
         }
     }
 
@@ -104,7 +111,7 @@ public class ForumController {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersByThreadAndPost(slug, limit, since, desc));
         }catch(DataAccessException error){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("there's no such forum");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("there's no such forum"));
         }
     }
 

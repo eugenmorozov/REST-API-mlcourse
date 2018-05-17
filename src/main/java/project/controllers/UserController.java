@@ -12,11 +12,12 @@ import org.springframework.dao.DuplicateKeyException;
 import java.io.Console;
 import java.util.List;
 
+import project.models.ErrorModel;
 import project.models.UserModel;
 import project.services.UserService;
 
 @Controller
-@RequestMapping("/user")
+@RequestMapping("api/user")
 public class UserController{
 
     private UserService userService;
@@ -47,7 +48,7 @@ public class UserController{
         if(user!=null){
             return ResponseEntity.status(HttpStatus.OK).body(user);
         }else{
-            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Can't find user by nickname: "+ nickname);
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("Can't find user by nickname: "+ nickname));
         }
 
     }
@@ -60,12 +61,12 @@ public class UserController{
         user.setNickname(nickname);
         UserModel oldUser = userService.getUserByNickname(nickname);
         if ( oldUser == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no such user");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("no such user"));
         }else{
             try{
                  return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserByNickname(user, oldUser) );
-            }catch (DataAccessException error){
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("conflict with another user");
+            }catch (Exception exc){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorModel("conflict with another user"));
             }
         }
     }

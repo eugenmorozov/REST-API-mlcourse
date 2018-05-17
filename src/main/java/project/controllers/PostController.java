@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-@RequestMapping("/post")
+@RequestMapping("api/post")
 public class PostController {
     private PostService postService;
 
@@ -34,7 +34,7 @@ public class PostController {
         if(oldPost != null){
             return ResponseEntity.status(HttpStatus.OK).body(postService.updatePost(post, oldPost));
         }else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("post doesnt exists");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("post doesn't exists"));
         }
     }
 }

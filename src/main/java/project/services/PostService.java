@@ -1,6 +1,7 @@
 package project.services;
 
 import java.io.IOException;
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,7 +10,6 @@ import java.util.List;
 import java.time.format.DateTimeFormatter;
 import java.time.ZonedDateTime;
 
-import javafx.geometry.Pos;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -38,46 +38,114 @@ public class PostService {
         }
     }
 
+    private Array getPathById(Integer id) {
+        String sql = "SELECT path FROM posts WHERE id = ?";
+        return  jdbcTemplate.queryForObject(sql, Array.class, id);
+    }
+
+    private Integer generateId(){
+        return jdbcTemplate.
+            queryForObject("SELECT nextval(pg_get_serial_sequence('posts', 'id'))", Integer.class);
+    }
+
     @Transactional
     public List<PostModel> CreatePosts(List<PostModel> posts, ThreadModel thread){
 
-        String createQuery = "INSERT INTO posts (author, created, forum, isEdited, message, parent, thread ) VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?)";
+        String createQuery = "INSERT INTO posts (author, created, forum, id, isEdited, message, parent, path, thread )" +
+                " VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?)";
         String currentTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         for(PostModel post : posts) {
-                if( post.getParent() != 0  && getPostById( post.getParent() ) == null){
-                    throw new RuntimeException();
-                } else {
-                    post.setCreated(currentTime);
-                    post.setEdited(false);
-                    post.setForum(thread.getForum());
-                    post.setThread(thread.getId());
-                    jdbcTemplate.update(
-                            createQuery,
-                            post.getAuthor(),
-                            post.getCreated(),
-                            post.getForum(),
-                            post.isEdited(),
-                            post.getMessage(),
-                            post.getParent(),
-                            post.getThread()
-                    );
-                }
-            }
-            return posts;
-    }
+            Array path = null;
+            PostModel parentPost = getPostById( post.getParent() );
+            int id = generateId();
+            if( post.getParent() != 0  && parentPost == null){
+                throw new RuntimeException();
+            } else {
 
-    public PostModel postDetails(
-            int id,
-            List<String> related
-    ){
-        PostModel post = getPostById(id);
-        for( String keyword : related){
-            if(keyword.trim().toLowerCase().contains("forum")){
-                System.out.println("contains, yep");
+                if(post.getParent() != 0) {
+                    path = getPathById(parentPost.getId());
+                }
+                post.setCreated(currentTime);
+                post.setForum(thread.getForum());
+                post.setEdited(false);
+                post.setThread(thread.getId());
+                jdbcTemplate.update(
+                        createQuery,
+                        post.getAuthor(),
+                        post.getCreated(),
+                        post.getForum(),
+                        id,
+                        post.isEdited(),
+                        post.getMessage(),
+                        post.getParent(),
+                        path,
+                        id,
+                        post.getThread()
+                );
             }
         }
-        return post;
+        jdbcTemplate.update(
+                "UPDATE forums SET posts = forums.posts + ? WHERE slug = ?::citext",
+                posts.size(),
+                thread.getForum()
+        );
+        return posts;
     }
+
+    public ArrayList<PostModel> getPosts(int id,
+                                    int limit,
+                                    int since,
+                                    String sort,
+                                    boolean desc) {
+        //we have three ways of sort:
+        //
+        //select *  from posts where path[1] in
+        //(select distinct path[1] from posts where path[1] > since(0) order by path[1]  limit n)
+        // order by path[1] (desc) , path;
+        //
+        //select *  from posts where path[1] > since(0) order by path[1] (desc), path limit n
+        //
+        //select * from posts where id > since(0) order by id (desc) limit n
+        if(sort.equals("tree")){
+            String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts " +
+                    " WHERE thread = ? and path[1] > ? order by path[1]";
+            if(desc){
+                getQuery += " DESC ";
+            }
+            getQuery += " ,path limit ? ";
+            return (ArrayList<PostModel>) jdbcTemplate.query(getQuery,new Object[]{id, since, limit}, new PostRowMapper());
+        }else if(sort.equals("parent_tree")){
+            String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts " +
+                    " where thread = ? and path[1] in" +
+                    " (select distinct path[1] from posts where path[1] > ? order by path[1]  limit ?) order by path[1] ";
+            if(desc){
+                getQuery += " DESC ";
+            }
+            getQuery += " , path ";
+            return (ArrayList<PostModel>) jdbcTemplate.query(getQuery,new Object[]{id, since, limit}, new PostRowMapper());
+        }
+
+        String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts WHERE thread = ? and path[1] > ? order by id ";
+        if(desc){
+            getQuery += " DESC ";
+        }
+        getQuery += " LIMIT ? ";
+        return (ArrayList<PostModel>) jdbcTemplate.query(getQuery,new Object[]{id, since, limit}, new PostRowMapper());
+
+    }
+
+//    public PostModel postDetails(
+//            int id,
+//            List<String> related
+//    ){
+//        PostModel post = getPostById(id);
+//        for( String keyword : related){
+//            if(keyword.trim().toLowerCase().contains("forum")){
+//                System.out.println("contains, yep");
+//            }
+//        }
+//        return post;
+//    }
 
     public PostModel updatePost(
             PostModel post,

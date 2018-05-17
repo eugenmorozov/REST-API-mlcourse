@@ -21,7 +21,7 @@ public class ForumService {
 
     public void createForum(ForumModel forum){
         jdbcTemplate.update(
-            "INSERT INTO forums (posts, slug, threads, title, nickname) VALUES (?,?,?,?,?)",
+            "INSERT INTO forums (posts, slug, threads, title, nickname) VALUES (?,?::citext,?,?,?::citext)",
             forum.getPosts(),
             forum.getSlug(),
             forum.getThreads(),

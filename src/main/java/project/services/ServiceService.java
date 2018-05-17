@@ -19,8 +19,9 @@ public class ServiceService {
     }
 
     public void clearAll(){
-        jdbcTemplate.update("TRUNCATE forums, users, threads, posts");
+        jdbcTemplate.update("TRUNCATE forums, users, threads, posts, votes");
     }
+
     public ServiceModel getInfo(){
         int forums = jdbcTemplate.queryForObject("SELECT COUNT(*) from forums",int.class);
         int posts = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM posts", int.class);
