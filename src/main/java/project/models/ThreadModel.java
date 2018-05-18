@@ -1,6 +1,9 @@
 package project.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.sql.Timestamp;
 
 public class ThreadModel {
@@ -14,17 +17,16 @@ public class ThreadModel {
     private int votes;
 
     public ThreadModel(){
-
     }
-
-    public ThreadModel(String author, //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                       String created,
-                       String forum,
-                       int id,
-                       String message,
-                       String slug,
-                       String title,
-                       int votes) {
+    @JsonCreator
+    public ThreadModel(@JsonProperty(value = "author") String author, //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                       @JsonProperty(value = "created") String created,
+                       @JsonProperty(value = "forum") String forum,
+                       @JsonProperty(value = "id") int id,
+                       @JsonProperty(value = "message") String message,
+                       @JsonProperty(value = "slug") String slug,
+                       @JsonProperty(value = "title") String title,
+                       @JsonProperty(value = "votes") int votes) {
         this.author = author;
         this.created = created;
         this.forum = forum;

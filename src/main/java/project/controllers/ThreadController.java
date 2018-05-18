@@ -10,6 +10,7 @@ import project.services.ForumService;
 import project.services.PostService;
 import project.services.ThreadService;
 import project.services.UserService;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +20,12 @@ import java.util.List;
 public class ThreadController {
     private PostService postService;
     private ThreadService threadService;
+    private UserService userService;
 
-    public ThreadController(PostService postService, ThreadService threadService) {
+    public ThreadController(PostService postService, ThreadService threadService, UserService userService) {
         this.postService = postService;
         this.threadService = threadService;
+        this.userService = userService;
     }
 
     @GetMapping(path = "/{slug_or_id}/details")
@@ -55,13 +58,17 @@ public class ThreadController {
             @PathVariable("slug_or_id") String slugOrId,
             @RequestBody VoteModel vote
     ) {
-        try{
             ThreadModel thread = threadService.getThreadBySlugOrId(slugOrId);
-            vote.setThread(thread.getSlug());
-            return ResponseEntity.status(HttpStatus.OK).body(threadService.setVote(vote));
-        } catch (DataAccessException error){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("thread not found"));
-        }
+            if(thread != null) {
+                vote.setThread(thread.getSlug());
+                try{
+                    return ResponseEntity.status(HttpStatus.OK).body(threadService.setVote(vote));
+                }catch(RuntimeException err){
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("thread not found"));
+                }
+            }else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("thread not found"));
+            }
     }
 
     @PostMapping(path = "/{slug_or_id}/create")
@@ -72,7 +79,12 @@ public class ThreadController {
         ThreadModel thread =  threadService.getThreadBySlugOrId(slugOrId);
         if( thread != null){
             try {
-                return ResponseEntity.status(HttpStatus.OK).body(postService.CreatePosts(posts, thread));
+                posts = postService.CreatePosts(posts, thread);
+                if(posts == null){
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("user doesnt exists"));
+                }else {
+                    return ResponseEntity.status(HttpStatus.CREATED).body(posts);
+                }
             }catch (RuntimeException error){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorModel("no parent post"));
             }
@@ -85,11 +97,18 @@ public class ThreadController {
     public ResponseEntity getUsers(
             @PathVariable("slugOrId") String slugOrId,
             @RequestParam(value = "limit", required = false, defaultValue = "99999") Integer limit,
-            @RequestParam(value = "since", required = false, defaultValue = "0") Integer since,
+            @RequestParam(value = "since", required = false) Integer since,
             @RequestParam(value = "sort", required = false, defaultValue = "flat") String sort,
             @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc
     ){
         ThreadModel thread = threadService.getThreadBySlugOrId(slugOrId);
+        if(since == null){
+            if(desc) {
+                since = 999999;
+            }else{
+                since = 0;
+            }
+        }
         if(thread != null) {
             int id = thread.getId();
             return ResponseEntity.status(HttpStatus.OK).body(postService.getPosts(id,limit,since,sort,desc));

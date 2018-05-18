@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import project.models.ThreadModel;
@@ -35,10 +36,12 @@ public class ThreadService {
                 "UPDATE forums SET threads = threads + 1 WHERE slug = ?::citext",
                 thread.getForum()
         );
+
+        System.out.println("OH SHIT                  "+thread.getSlug());
+
         if(thread.getSlug() == null ){
-            System.out.println("uck");
             return jdbcTemplate.queryForObject(
-                    "INSERT INTO threads (author, created, forum, message, title, votes) VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?) RETURNING *" ,
+                    "INSERT INTO threads (author, created, forum, message, title, votes) VALUES ( ?::citext, ?::TIMESTAMPTZ, ?, ?, ?, ? ) RETURNING *" ,
                     new ThreadRowMapper(),
                     thread.getAuthor(),
                     thread.getCreated(),
@@ -73,14 +76,18 @@ public class ThreadService {
     public ArrayList<ThreadModel> getThreadsBySlug(
             String slug,
             int limit,
-            Timestamp since,
+            String since,
             boolean desc
     ){
-        String query ="SELECT * FROM threads WHERE forum = ?::citext AND created > ? ORDER BY created ";
-        if(desc){
-            query += " DESC ";
+        String query ="SELECT * FROM threads WHERE forum = ?::citext AND created ";
+
+        if( desc ){
+            query += "  <= ?::timestamptz ORDER BY created DESC ";
+        }else{
+            query += "  >= ?::timestamptz ORDER BY created ";
         }
         query += " LIMIT ? ";
+        System.out.println(query);
         return (ArrayList<ThreadModel>) jdbcTemplate.query(
                 query,
                 new Object[]{slug, since,limit},
@@ -148,7 +155,7 @@ public class ThreadService {
         );
     }
     public ThreadModel updateThread( ThreadModel thread, ThreadModel oldThread){
-        String createQuery = "UPDATE threads SET ( author, created, forum, message, slug, title) = (?,?,?,?,?,?) WHERE slug = ?::citext";
+        String createQuery = "UPDATE threads SET ( author, created, forum, message, slug, title) = (?,?::timestamptz,?,?,?,?) WHERE slug = ?::citext";
         if ( thread.getAuthor() != null){
             oldThread.setAuthor(thread.getAuthor());
         }
@@ -207,6 +214,7 @@ public class ThreadService {
 
     public static class ThreadRowMapper implements RowMapper<ThreadModel> {
         @Override
+        @Nullable
         public ThreadModel mapRow(ResultSet resSet, int rowNum) throws SQLException {
             Timestamp timestamp = resSet.getTimestamp("created");
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");

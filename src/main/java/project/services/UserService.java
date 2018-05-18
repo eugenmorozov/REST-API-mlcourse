@@ -40,18 +40,27 @@ public class UserService {
 
     public ArrayList<UserModel> getUsersByThreadAndPost(String slug,
                                                         int limit,
-                                                        int since,
+                                                        String since,
                                                         boolean desc){
-        String getQuery = "SELECT about, email, fullname, nickname FROM users JOIN threads ON users.nickname = threads.author WHERE threads.forum = ?::citext " +
-                "AND users.id > ?";
+        String getQuery = "SELECT about, email, fullname, nickname FROM users JOIN threads ON users.nickname = threads.author::citext WHERE threads.forum = ?::citext ";
+        if(!desc){
+            getQuery += " AND users.nickname > ?::citext ";
+        }else{
+            getQuery += " AND users.nickname < ?::citext ";
+        }
         getQuery += " UNION ";
-        getQuery += " SELECT about, email, fullname, nickname FROM users JOIN posts ON users.nickname = posts.author WHERE posts.forum = ?::citext " +
-                "AND users.id > ?";
-        getQuery += " ORDER BY nickname";
+        getQuery += " SELECT about, email, fullname, nickname FROM users JOIN posts ON users.nickname = posts.author::citext WHERE posts.forum = ?::citext " ;
+        if(!desc){
+            getQuery += " AND users.nickname > ?::citext ";
+        }else{
+            getQuery += " AND users.nickname < ?::citext ";
+        }
+        getQuery += " ORDER BY nickname ";
         if(desc){
             getQuery += " DESC ";
         }
         getQuery += " LIMIT ? ";
+        System.out.println(getQuery);
         return (ArrayList<UserModel>) jdbcTemplate.query(getQuery,new Object[]{slug, since, slug, since, limit}, new UserRowMapper());
     }
 

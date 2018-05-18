@@ -16,6 +16,8 @@ import project.services.ThreadService;
 import project.services.UserService;
 
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 @Controller
@@ -65,6 +67,11 @@ public class ForumController {
                 thread.setVotes(0);
                 thread.setForum(forum.getSlug());
                 thread.setId(threadService.generateId());
+                if(thread.getCreated() == null){
+                    String currentTime = ZonedDateTime.now().
+                            format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+                    thread.setCreated(currentTime);
+                }
                 return ResponseEntity.status(HttpStatus.CREATED).body(threadService.createThread(thread));
             } catch (DataAccessException error) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body( threadService.getThreadBySlug( thread.getSlug() ) );
@@ -91,9 +98,18 @@ public class ForumController {
     public ResponseEntity getThreads(
             @PathVariable("slug") String slug,
             @RequestParam(value = "limit", required = false, defaultValue = "9999") Integer limit,
-            @RequestParam(value = "since", required = false, defaultValue = "1000-01-01 00:00:00.000") Timestamp since,
+            @RequestParam(value = "since", required = false) String since,
             @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc
     ){
+        //efaultValue = "1000-01-01 00:00:00.000"
+        if(since == null){
+            if(desc) {
+                since = " 2518-07-06T19:44:44.813+03:00";
+            }else{
+                since = " 1018-07-06T19:44:44.813+03:00";
+            }
+        }
+
         if (forumService.getForumBySlug(slug) != null){
             return ResponseEntity.status(HttpStatus.OK).body(threadService.getThreadsBySlug(slug,limit,since,desc));
         }else{
@@ -105,12 +121,25 @@ public class ForumController {
     public ResponseEntity getUsers(
             @PathVariable("slug") String slug,
             @RequestParam(value = "limit", required = false, defaultValue = "9999") Integer limit,
-            @RequestParam(value = "since", required = false, defaultValue = "0") int since,
+            @RequestParam(value = "since", required = false) String since,
             @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc
     ){
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersByThreadAndPost(slug, limit, since, desc));
-        }catch(DataAccessException error){
+        if(since == null){
+            if(desc){
+                since = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+            }else{
+                since = "";
+            }
+        }
+        System.out.println("FUCK THERES USERS");
+        ForumModel forum = forumService.getForumBySlug(slug);
+        if(forum != null) {
+            try {
+                return ResponseEntity.status(HttpStatus.OK).body(userService.getUsersByThreadAndPost(slug, limit, since, desc));
+            } catch (Exception error) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("there's no such forum"));
+            }
+        }else{
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("there's no such forum"));
         }
     }

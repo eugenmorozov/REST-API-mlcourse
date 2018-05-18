@@ -2,7 +2,7 @@ package project.models;
 
 public class PostFullModel {
     private UserModel author;
-    private ForumModel forumModel;
+    private ForumModel forum;
     private PostModel post;
     private ThreadModel thread;
 
@@ -12,9 +12,13 @@ public class PostFullModel {
             PostModel post,
             ThreadModel thread) {
         this.author = author;
-        this.forumModel = forumModel;
+        this.forum = forumModel;
         this.post = post;
         this.thread = thread;
+    }
+
+    public PostFullModel(PostModel post) {
+        this.post = post;
     }
 
     public UserModel getAuthor() {
@@ -25,12 +29,12 @@ public class PostFullModel {
         this.author = author;
     }
 
-    public ForumModel getForumModel() {
-        return forumModel;
+    public ForumModel getForum() {
+        return forum;
     }
 
-    public void setForumModel(ForumModel forumModel) {
-        this.forumModel = forumModel;
+    public void setForum(ForumModel forum) {
+        this.forum = forum;
     }
 
     public PostModel getPost() {

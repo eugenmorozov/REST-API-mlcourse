@@ -13,6 +13,7 @@ public class PostModel {
     public PostModel() {
     }
 
+
     public PostModel(
             String author,
             String created,
@@ -64,11 +65,11 @@ public class PostModel {
         this.id = id;
     }
 
-    public boolean isEdited() {
+    public boolean getIsEdited() {
         return isEdited;
     }
 
-    public void setEdited(boolean edited) {
+    public void setIsEdited(boolean edited) {
         isEdited = edited;
     }
 

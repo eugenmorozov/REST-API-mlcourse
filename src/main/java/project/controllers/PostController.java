@@ -37,4 +37,16 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("post doesn't exists"));
         }
     }
+
+    @GetMapping(path = "/{id}/details")
+    public ResponseEntity getPost(
+            @PathVariable("id") int id,
+            @RequestParam(value = "related", required = false, defaultValue = "") String related
+    ){
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(postService.getFullModel(id, related));
+        }catch (Exception err){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("cant find post"));
+        }
+    }
 }
