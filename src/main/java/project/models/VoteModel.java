@@ -3,13 +3,13 @@ package project.models;
 public class VoteModel {
 
     private String nickname;
-    private String thread;
+    private int thread;
     private int voice;
 
     public VoteModel() {
     }
 
-    public VoteModel(String nickname, String thread, int voice) {
+    public VoteModel(String nickname, int thread, int voice) {
         this.nickname = nickname;
         this.thread = thread;
         this.voice = voice;
@@ -23,11 +23,11 @@ public class VoteModel {
         this.nickname = nickname;
     }
 
-    public String getThread() {
+    public int getThread() {
         return thread;
     }
 
-    public void setThread(String thread) {
+    public void setThread(int thread) {
         this.thread = thread;
     }
 

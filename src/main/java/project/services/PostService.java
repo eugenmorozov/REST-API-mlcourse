@@ -85,18 +85,18 @@ public class PostService {
                 post.setForum(thread.getForum());
                 post.setIsEdited(false);
                 post.setThread(thread.getId());
-                post.setId((id));
+                post.setId(id);
                 jdbcTemplate.update(
                         createQuery,
                         post.getAuthor(),
                         post.getCreated(),
                         post.getForum(),
-                        id,
+                        post.getId(),
                         post.getIsEdited(),
                         post.getMessage(),
                         post.getParent(),
                         path,
-                        id,
+                        post.getId(),
                         post.getThread()
                 );
             }

@@ -60,11 +60,12 @@ public class ThreadController {
     ) {
             ThreadModel thread = threadService.getThreadBySlugOrId(slugOrId);
             if(thread != null) {
-                vote.setThread(thread.getSlug());
+                vote.setThread(thread.getId());
                 try{
+
                     return ResponseEntity.status(HttpStatus.OK).body(threadService.setVote(vote));
                 }catch(RuntimeException err){
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("thread not found"));
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("threads not found"));
                 }
             }else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("thread not found"));

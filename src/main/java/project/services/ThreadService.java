@@ -36,8 +36,8 @@ public class ThreadService {
                 "UPDATE forums SET threads = threads + 1 WHERE slug = ?::citext",
                 thread.getForum()
         );
-        thread.setId(generateId());
-        System.out.println("OH SHIT                  "+String.valueOf(thread.getId()));
+        //thread.setId(generateId());
+        //System.out.println("OH SHIT                  "+String.valueOf(thread.getId()));
 
         if(thread.getSlug() == null ){
             return jdbcTemplate.queryForObject(
@@ -87,7 +87,7 @@ public class ThreadService {
             query += "  >= ?::timestamptz ORDER BY created ";
         }
         query += " LIMIT ? ";
-        System.out.println(query);
+        //System.out.println(query);
         return (ArrayList<ThreadModel>) jdbcTemplate.query(
                 query,
                 new Object[]{slug, since,limit},
@@ -125,7 +125,7 @@ public class ThreadService {
 
         if (getVote(vote) != null) {
             jdbcTemplate.update(
-                    "UPDATE votes SET (nickname, thread, voice) = (?, ?, ?) WHERE nickname = ?::citext AND thread = ?::citext",
+                    "UPDATE votes SET (nickname, thread, voice) = (?, ?, ?) WHERE nickname = ?::citext AND thread = ?",
                     vote.getNickname(),
                     vote.getThread(),
                     vote.getVoice(),
@@ -133,6 +133,7 @@ public class ThreadService {
                     vote.getThread()
             );
         } else {
+            System.out.println(String.valueOf(vote.getThread()));
             jdbcTemplate.update(
                     "INSERT INTO  votes (nickname, thread, voice) VALUES (?, ?, ?)",
                     vote.getNickname(),
@@ -140,16 +141,16 @@ public class ThreadService {
                     vote.getVoice()
             );
         }
-        updateVotesBySlugOrId(vote.getThread());
-        return getThreadBySlugOrId(vote.getThread());
+        updateVotesById(vote.getThread());
+        return getThreadBySlugOrId(String.valueOf(vote.getThread()));
     }
-    public void updateVotesBySlugOrId (String thread){
+    public void updateVotesById (int thread){
         int rating = jdbcTemplate.queryForObject(
-                "SELECT sum(voice) FROM votes WHERE thread = ?::citext",
+                "SELECT sum(voice) FROM votes WHERE thread = ?",
                 new Object[]{thread},
                 int.class);
         jdbcTemplate.update(
-                "UPDATE threads SET votes = ? WHERE slug = ?::citext",
+                "UPDATE threads SET votes = ? WHERE id = ?",
                 rating,
                 thread
         );
@@ -191,7 +192,7 @@ public class ThreadService {
     public VoteModel getVote ( VoteModel vote){
         try{
             return jdbcTemplate.queryForObject(
-                    "SELECT * FROM votes WHERE nickname = ?::citext AND  thread = ?::citext",
+                    "SELECT * FROM votes WHERE nickname = ?::citext AND  thread = ?",
                     new Object[]{ vote.getNickname(), vote.getThread()},
                     new ThreadService.VoteRowMapper()
             );
@@ -206,7 +207,7 @@ public class ThreadService {
         public VoteModel mapRow(ResultSet resultSet, int rowNum) throws SQLException{
             return new VoteModel(
                     resultSet.getString("nickname"),
-                    resultSet.getString("thread"),
+                    resultSet.getInt("thread"),
                     resultSet.getInt("voice")
             );
         }
