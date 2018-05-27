@@ -20,9 +20,11 @@ import project.models.VoteModel;
 @Repository
 public class ThreadService {
     private JdbcTemplate jdbcTemplate;
+    private ThreadService threadService;
 
-    public ThreadService(JdbcTemplate jdbcTemplate) {
+    public ThreadService(JdbcTemplate jdbcTemplate, ThreadService threadService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.threadService = threadService;
     }
 
     public int generateId(){
@@ -36,8 +38,8 @@ public class ThreadService {
                 "UPDATE forums SET threads = threads + 1 WHERE slug = ?::citext",
                 thread.getForum()
         );
-
-        System.out.println("OH SHIT                  "+thread.getSlug());
+        thread.setId(threadService.generateId());
+        System.out.println("OH SHIT                  "+thread.getId());
 
         if(thread.getSlug() == null ){
             return jdbcTemplate.queryForObject(

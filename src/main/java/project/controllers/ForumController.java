@@ -66,13 +66,12 @@ public class ForumController {
             try {
                 thread.setVotes(0);
                 thread.setForum(forum.getSlug());
-                thread.setId(threadService.generateId());
+
                 if(thread.getCreated() == null){
                     String currentTime = ZonedDateTime.now().
                             format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
                     thread.setCreated(currentTime);
                 }
-                System.out.println("created thread: "+String.valueOf(thread.getId()));
 
                 return ResponseEntity.status(HttpStatus.CREATED).body(threadService.createThread(thread));
             } catch (DataAccessException error) {
