@@ -39,7 +39,7 @@ public class ThreadService {
                 thread.getForum()
         );
         thread.setId(threadService.generateId());
-        System.out.println("OH SHIT                  "+thread.getId());
+        System.out.println("OH SHIT                  "+String.valueOf(thread.getId()));
 
         if(thread.getSlug() == null ){
             return jdbcTemplate.queryForObject(
