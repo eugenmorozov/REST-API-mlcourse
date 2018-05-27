@@ -72,7 +72,8 @@ public class ForumController {
                             format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
                     thread.setCreated(currentTime);
                 }
-                System.out.println("created thread: "+slug);
+                System.out.println("created thread: "+String.valueOf(thread.getId()));
+
                 return ResponseEntity.status(HttpStatus.CREATED).body(threadService.createThread(thread));
             } catch (DataAccessException error) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body( threadService.getThreadBySlug( thread.getSlug() ) );
