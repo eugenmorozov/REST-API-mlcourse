@@ -29,9 +29,8 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
 
 RUN echo "shared_buffers = 256MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "checkpoint_segments = 256" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "work_mem = 25MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "maintainance_work_mem = 128MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "maintenance_work_mem = 128MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "wal_buffers = 1MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
 # Expose the PostgreSQL port
