@@ -61,9 +61,10 @@ public class PostService {
     @Transactional
     public List<PostModel> CreatePosts(List<PostModel> posts, ThreadModel thread){
 
-        String createQuery = "INSERT INTO posts (author, created, forum, id, isEdited, message, parent, path, thread )" +
-                " VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?)";
+        String createQuery = "INSERT INTO posts (author, user_id, created, forum, id, isEdited, message, parent, path, thread )" +
+                " VALUES (?,?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?)";
         String currentTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+
         for(PostModel post : posts) {
             if(userService.getUserByNickname(post.getAuthor()) == null){
                 return null;
@@ -71,6 +72,7 @@ public class PostService {
             Array path = null;
             PostModel parentPost = getPostById( post.getParent() );
             int id = generateId();
+            int user_id = userService.getUserIdByNickname(post.getAuthor());
             if( post.getParent() != 0  && parentPost == null){
                 throw new RuntimeException();
             } else {
@@ -89,6 +91,7 @@ public class PostService {
                 jdbcTemplate.update(
                         createQuery,
                         post.getAuthor(),
+                        user_id,
                         post.getCreated(),
                         post.getForum(),
                         post.getId(),
@@ -169,18 +172,6 @@ public class PostService {
 
     }
 
-//    public PostModel postDetails(
-//            int id,
-//            List<String> related
-//    ){
-//        PostModel post = getPostById(id);
-//        for( String keyword : related){
-//            if(keyword.trim().toLowerCase().contains("forum")){
-//                System.out.println("contains, yep");
-//            }
-//        }
-//        return post;
-//    }
 
     public PostModel updatePost(
             PostModel post,

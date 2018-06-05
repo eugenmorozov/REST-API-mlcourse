@@ -42,14 +42,14 @@ public class UserService {
                                                         int limit,
                                                         String since,
                                                         boolean desc){
-        String getQuery = "SELECT about, email, fullname, nickname FROM users JOIN threads ON users.nickname = threads.author::citext WHERE threads.forum = ?::citext ";
+        String getQuery = "SELECT about, email, fullname, nickname FROM users JOIN threads ON users.id = threads.user_id WHERE threads.forum = ?::citext ";
         if(!desc){
             getQuery += " AND users.nickname > ?::citext ";
         }else{
             getQuery += " AND users.nickname < ?::citext ";
         }
         getQuery += " UNION ";
-        getQuery += " SELECT about, email, fullname, nickname FROM users JOIN posts ON users.nickname = posts.author::citext WHERE posts.forum = ?::citext " ;
+        getQuery += " SELECT about, email, fullname, nickname FROM users JOIN posts ON users.id = posts.user_id WHERE posts.forum = ?::citext " ;
         if(!desc){
             getQuery += " AND users.nickname > ?::citext ";
         }else{
@@ -72,6 +72,14 @@ public class UserService {
         }catch(DataAccessException error){
             return null;
         }
+    }
+
+    public int getUserIdByNickname(String nickname){
+        return jdbcTemplate.queryForObject(
+                "SELECT id FROM users where nickname = ?::citext",
+                new Object[]{nickname},
+                Integer.class
+                );
     }
 
 //public UserModel getUserById(int id){

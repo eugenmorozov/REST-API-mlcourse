@@ -1,18 +1,11 @@
-create extension if not exists citext;
-
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL NOT NULL PRIMARY KEY,
-  about TEXT DEFAULT NULL,
-  fullname TEXT DEFAULT NULL,
-  nickname CITEXT COLLATE "ucs_basic" UNIQUE,
-  email CITEXT UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS forums (
-  id SERIAL NOT NULL PRIMARY KEY,
-  posts INTEGER DEFAULT 0,
-  slug CITEXT COLLATE "ucs_basic" UNIQUE,
-  threads INTEGER DEFAULT 0,
-  title TEXT NOT NULL,
-  nickname CITEXT COLLATE "ucs_basic" REFERENCES "users"(nickname) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS threads (
+	author CITEXT COLLATE "ucs_basic" REFERENCES "users"(nickname) ON DELETE CASCADE,
+	user_id INTEGER NOT NULL REFERENCES  "users"(id) ON DELETE CASCADE,
+	created TIMESTAMPTZ,
+	forum CITEXT COLLATE "ucs_basic" REFERENCES "forums"(slug) ON DELETE CASCADE,
+	id SERIAL NOT NULL PRIMARY KEY,
+	message TEXT DEFAULT '',
+	slug CITEXT COLLATE "ucs_basic" UNIQUE,
+	title TEXT NOT NULL,
+	votes INTEGER DEFAULT 0
 );

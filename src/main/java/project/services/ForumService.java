@@ -10,24 +10,29 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import project.models.ForumModel;
+import project.models.UserModel;
 
 @Repository
 public class ForumService {
     private JdbcTemplate jdbcTemplate;
+    private UserService userService;
 
-    public ForumService(JdbcTemplate jdbcTemplate) {
+    public ForumService(JdbcTemplate jdbcTemplate, UserService userService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userService = userService;
     }
 
     public ForumModel createForum(ForumModel forum){
-         return jdbcTemplate.queryForObject(
-            "INSERT INTO forums (posts, slug, threads, title, nickname) VALUES (?,?::citext,?,?,?::citext) RETURNING *",
+        int userId = userService.getUserIdByNickname(forum.getUser());
+        return jdbcTemplate.queryForObject(
+        "INSERT INTO forums (posts, slug, threads, title, nickname, user_id) VALUES (?,?::citext,?,?,?::citext, ?) RETURNING *",
             new ForumRowMapper(),
             forum.getPosts(),
             forum.getSlug(),
             forum.getThreads(),
             forum.getTitle(),
-            forum.getUser()
+            forum.getUser(),
+            userId
         );
     }
 

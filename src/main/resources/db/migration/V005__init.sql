@@ -1,12 +1,7 @@
-create extension if not exists citext;
-CREATE TABLE IF NOT EXISTS posts (
-  author CITEXT COLLATE "ucs_basic" REFERENCES "users"(nickname) ON DELETE CASCADE,
-  created TIMESTAMPTZ,
-  forum CITEXT COLLATE "ucs_basic" REFERENCES "forums"(slug) ON DELETE CASCADE,
-  id SERIAL NOT NULL PRIMARY KEY,
-  isEdited BOOLEAN DEFAULT FALSE,
-  message TEXT DEFAULT '',
-  parent INTEGER NOT NULL DEFAULT 0,
-  path INTEGER [],
-  thread INTEGER NOT NULL REFERENCES "threads"(id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS votes (
+  nickname CITEXT COLLATE "ucs_basic" REFERENCES  "users"(nickname) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES  "users"(id) ON DELETE CASCADE,
+  thread INTEGER NOT NULL REFERENCES "threads"(id) ON DELETE CASCADE,
+  voice INTEGER DEFAULT 0,
+  UNIQUE (nickname, thread)
 );
