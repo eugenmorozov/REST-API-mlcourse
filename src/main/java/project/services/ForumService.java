@@ -19,9 +19,10 @@ public class ForumService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void createForum(ForumModel forum){
-        jdbcTemplate.update(
-            "INSERT INTO forums (posts, slug, threads, title, nickname) VALUES (?,?::citext,?,?,?::citext)",
+    public ForumModel createForum(ForumModel forum){
+         return jdbcTemplate.queryForObject(
+            "INSERT INTO forums (posts, slug, threads, title, nickname) VALUES (?,?::citext,?,?,?::citext) RETURNING *",
+            new ForumRowMapper(),
             forum.getPosts(),
             forum.getSlug(),
             forum.getThreads(),

@@ -45,9 +45,9 @@ public class ForumController {
                 forum.setPosts(0);
                 forum.setThreads(0);
                 forum.setUser(user.getNickname());
-                forumService.createForum(forum);
+
                 return ResponseEntity.status(HttpStatus.CREATED).body(
-                    forumService.getForumBySlug(forum.getSlug())
+                        forumService.createForum(forum)
                 );
             } catch (Exception error) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
