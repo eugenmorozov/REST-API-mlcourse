@@ -103,13 +103,13 @@ public class ForumController {
             @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc
     ){
         //efaultValue = "1000-01-01 00:00:00.000"
-        if(since == null){
-            if(desc) {
-                since = " 2518-07-06T19:44:44.813+03:00";
-            }else{
-                since = " 1018-07-06T19:44:44.813+03:00";
-            }
-        }
+//        if(since == null){
+//            if(desc) {
+//                since = " 2518-07-06T19:44:44.813+03:00";
+//            }else{
+//                since = " 1018-07-06T19:44:44.813+03:00";
+//            }
+//        }
 
         if (forumService.getForumBySlug(slug) != null){
             return ResponseEntity.status(HttpStatus.OK).body(threadService.getThreadsBySlug(slug,limit,since,desc));

@@ -79,20 +79,36 @@ public class ThreadService {
             String since,
             boolean desc
     ){
-        String query ="SELECT * FROM threads WHERE forum = ?::citext AND created ";
+        String query ="SELECT * FROM threads WHERE forum = ?::citext ";
+        if(since == null){
+            if (desc) {
+                query += "  ORDER BY created DESC ";
+            } else {
+                query += "  ORDER BY created ";
+            }
+            query += " LIMIT ? ";
+            return (ArrayList<ThreadModel>) jdbcTemplate.query(
+                    query,
+                    new Object[]{slug, limit},
+                    new ThreadRowMapper()
+            );
 
-        if( desc ){
-            query += "  <= ?::timestamptz ORDER BY created DESC ";
-        }else{
-            query += "  >= ?::timestamptz ORDER BY created ";
+        }else {
+            if (desc) {
+                query += "  AND created <= ?::timestamptz ORDER BY created DESC ";
+            } else {
+                query += "  AND created >= ?::timestamptz ORDER BY created ";
+            }
+            query += " LIMIT ? ";
+            return (ArrayList<ThreadModel>) jdbcTemplate.query(
+                    query,
+                    new Object[]{slug, since,limit},
+                    new ThreadRowMapper()
+            );
         }
-        query += " LIMIT ? ";
+
         //System.out.println(query);
-        return (ArrayList<ThreadModel>) jdbcTemplate.query(
-                query,
-                new Object[]{slug, since,limit},
-                new ThreadRowMapper()
-        );
+
 
     }
 
