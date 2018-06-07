@@ -15,6 +15,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import project.models.ThreadModel;
+import project.models.UserModel;
 import project.models.VoteModel;
 
 @Repository
@@ -34,15 +35,23 @@ public class ThreadService {
                 "UPDATE forums SET threads = threads + 1 WHERE slug = ?::citext",
                 thread.getForum()
         );
+        UserModel user = userService.getUserByNickname(thread.getAuthor());
+        jdbcTemplate.update(
+                "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?,?,?)",
+                user.getAbout(),
+                user.getFullname(),
+                user.getNickname(),
+                user.getEmail(),
+                thread.getForum()
+        );
         //thread.setId(generateId());
         //System.out.println("OH SHIT                  "+String.valueOf(thread.getId()));
-        int userId = userService.getUserIdByNickname(thread.getAuthor());
+        //int userId = userService.getUserIdByNickname(thread.getAuthor());
         if(thread.getSlug() == null ){
             return jdbcTemplate.queryForObject(
-                    "INSERT INTO threads (author, user_id, created, forum, message, title, votes) VALUES ( ?::citext, ?, ?::TIMESTAMPTZ, ?, ?, ?, ? ) RETURNING *" ,
+                    "INSERT INTO threads (author, created, forum, message, title, votes) VALUES ( ?::citext, ?::TIMESTAMPTZ, ?, ?, ?, ? ) RETURNING *" ,
                     new ThreadRowMapper(),
                     thread.getAuthor(),
-                    userId,
                     thread.getCreated(),
                     thread.getForum(),
                     thread.getMessage(),
@@ -51,10 +60,9 @@ public class ThreadService {
             );
         }
         return  jdbcTemplate.queryForObject(
-                "INSERT INTO threads (author, user_id, created, forum, message, slug, title, votes) VALUES (?, ?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?) RETURNING *" ,
+                "INSERT INTO threads (author, created, forum, message, slug, title, votes) VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?) RETURNING *" ,
                 new ThreadRowMapper(),
                 thread.getAuthor(),
-                userId,
                 thread.getCreated(),
                 thread.getForum(),
                 thread.getMessage(),
@@ -62,6 +70,7 @@ public class ThreadService {
                 thread.getTitle(),
                 thread.getVotes()
         );
+
     }
 
     public ThreadModel getThreadBySlug(String slug){
@@ -138,12 +147,10 @@ public class ThreadService {
 
     @Transactional
     public ThreadModel setVote(VoteModel vote){
-        int userId = userService.getUserIdByNickname(vote.getNickname());
         if (getVote(vote) != null) {
             jdbcTemplate.update(
-                    "UPDATE votes SET (nickname, user_id, thread, voice) = (?, ?, ?, ?) WHERE nickname = ?::citext AND thread = ?",
+                    "UPDATE votes SET (nickname, thread, voice) = (?, ?, ?) WHERE nickname = ?::citext AND thread = ?",
                     vote.getNickname(),
-                    userId,
                     vote.getThread(),
                     vote.getVoice(),
                     vote.getNickname(),
@@ -152,9 +159,8 @@ public class ThreadService {
         } else {
             System.out.println(String.valueOf(vote.getThread()));
             jdbcTemplate.update(
-                    "INSERT INTO  votes (nickname, user_id, thread, voice) VALUES (?, ?, ?, ?)",
+                    "INSERT INTO  votes (nickname, thread, voice) VALUES (?, ?, ?)",
                     vote.getNickname(),
-                    userId,
                     vote.getThread(),
                     vote.getVoice()
             );

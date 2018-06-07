@@ -42,26 +42,27 @@ public class UserService {
                                                         int limit,
                                                         String since,
                                                         boolean desc){
-        String getQuery = "SELECT about, email, fullname, nickname FROM users JOIN threads ON users.id = threads.user_id WHERE threads.forum = ?::citext ";
+        //Перенести в таблицу вида about, email, fullname, nickname, forum
+        String getQuery = "SELECT DISTINCT about, email, fullname, nickname FROM forum_users WHERE forum = ?::citext ";
         if(!desc){
-            getQuery += " AND users.nickname > ?::citext ";
+            getQuery += " AND nickname > ?::citext ";
         }else{
-            getQuery += " AND users.nickname < ?::citext ";
+            getQuery += " AND nickname < ?::citext ";
         }
-        getQuery += " UNION ";
-        getQuery += " SELECT about, email, fullname, nickname FROM users JOIN posts ON users.id = posts.user_id WHERE posts.forum = ?::citext " ;
-        if(!desc){
-            getQuery += " AND users.nickname > ?::citext ";
-        }else{
-            getQuery += " AND users.nickname < ?::citext ";
-        }
+//        getQuery += " UNION ";
+//        getQuery += " SELECT about, email, fullname, nickname FROM users JOIN posts ON users.id = posts.user_id WHERE posts.forum = ?::citext " ;
+//        if(!desc){
+//            getQuery += " AND users.nickname > ?::citext ";
+//        }else{
+//            getQuery += " AND users.nickname < ?::citext ";
+//        }
         getQuery += " ORDER BY nickname ";
         if(desc){
             getQuery += " DESC ";
         }
         getQuery += " LIMIT ? ";
         System.out.println(getQuery);
-        return (ArrayList<UserModel>) jdbcTemplate.query(getQuery,new Object[]{slug, since, slug, since, limit}, new UserRowMapper());
+        return (ArrayList<UserModel>) jdbcTemplate.query(getQuery,new Object[]{slug, since, limit}, new UserRowMapper());
     }
 
 
@@ -73,23 +74,6 @@ public class UserService {
             return null;
         }
     }
-
-    public int getUserIdByNickname(String nickname){
-        return jdbcTemplate.queryForObject(
-                "SELECT id FROM users where nickname = ?::citext",
-                new Object[]{nickname},
-                Integer.class
-                );
-    }
-
-//public UserModel getUserById(int id){
-//        try {
-//            String getQuery = "select * from users where id = ?";
-//            return jdbcTemplate.queryForObject(getQuery, new Object[]{id}, new UserRowMapper());
-//        }catch(DataAccessException error){
-//            return null;
-//        }
-//    }
 
     public UserModel updateUserByNickname(UserModel user, UserModel oldUser){
 

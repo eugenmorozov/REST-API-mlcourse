@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import project.models.PostFullModel;
 import project.models.PostModel;
 import project.models.ThreadModel;
+import project.models.UserModel;
 
 @Repository
 public class PostService {
@@ -61,18 +62,26 @@ public class PostService {
     @Transactional
     public List<PostModel> CreatePosts(List<PostModel> posts, ThreadModel thread){
 
-        String createQuery = "INSERT INTO posts (author, user_id, created, forum, id, isEdited, message, parent, path, thread )" +
-                " VALUES (?,?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?)";
+        String createQuery = "INSERT INTO posts (author, created, forum, id, isEdited, message, parent, path, thread )" +
+                " VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?)";
         String currentTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         for(PostModel post : posts) {
-            if(userService.getUserByNickname(post.getAuthor()) == null){
+            UserModel user = userService.getUserByNickname(post.getAuthor());
+            if(user == null){
                 return null;
             }
+            jdbcTemplate.update(
+                    "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?,?,?)",
+                    user.getAbout(),
+                    user.getFullname(),
+                    user.getNickname(),
+                    user.getEmail(),
+                    thread.getForum()
+            );
             Array path = null;
             PostModel parentPost = getPostById( post.getParent() );
-            int id = generateId();
-            int user_id = userService.getUserIdByNickname(post.getAuthor());
+            int id = generateId();//TODO убрать нахуй!
             if( post.getParent() != 0  && parentPost == null){
                 throw new RuntimeException();
             } else {
@@ -87,11 +96,10 @@ public class PostService {
                 post.setForum(thread.getForum());
                 post.setIsEdited(false);
                 post.setThread(thread.getId());
-                post.setId(id);
+                post.setId(id);//TODO: YBRAT NAXYI
                 jdbcTemplate.update(
                         createQuery,
                         post.getAuthor(),
-                        user_id,
                         post.getCreated(),
                         post.getForum(),
                         post.getId(),

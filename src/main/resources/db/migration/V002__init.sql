@@ -4,6 +4,5 @@ CREATE TABLE IF NOT EXISTS forums (
   slug CITEXT COLLATE "ucs_basic" UNIQUE,
   threads INTEGER DEFAULT 0,
   title TEXT NOT NULL,
-  nickname CITEXT COLLATE "ucs_basic" REFERENCES "users"(nickname) ON DELETE CASCADE,
-  user_id INTEGER NOT NULL  REFERENCES "users"(id) ON DELETE CASCADE
+  nickname CITEXT COLLATE "ucs_basic" REFERENCES "users"(nickname) ON DELETE CASCADE
 );

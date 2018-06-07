@@ -23,16 +23,14 @@ public class ForumService {
     }
 
     public ForumModel createForum(ForumModel forum){
-        int userId = userService.getUserIdByNickname(forum.getUser());
         return jdbcTemplate.queryForObject(
-        "INSERT INTO forums (posts, slug, threads, title, nickname, user_id) VALUES (?,?::citext,?,?,?::citext, ?) RETURNING *",
+        "INSERT INTO forums (posts, slug, threads, title, nickname) VALUES (?,?::citext,?,?,?::citext) RETURNING *",
             new ForumRowMapper(),
             forum.getPosts(),
             forum.getSlug(),
             forum.getThreads(),
             forum.getTitle(),
-            forum.getUser(),
-            userId
+            forum.getUser()
         );
     }
 
