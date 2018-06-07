@@ -97,7 +97,7 @@ public class ThreadController {
     @GetMapping(path = "/{slugOrId}/posts")
     public ResponseEntity getUsers(
             @PathVariable("slugOrId") String slugOrId,
-            @RequestParam(value = "limit", required = false, defaultValue = "99999") Integer limit,
+            @RequestParam(value = "limit", required = false, defaultValue = "9999999") Integer limit,
             @RequestParam(value = "since", required = false) Integer since,
             @RequestParam(value = "sort", required = false, defaultValue = "flat") String sort,
             @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc
