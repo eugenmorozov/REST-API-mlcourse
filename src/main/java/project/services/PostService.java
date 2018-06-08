@@ -86,7 +86,6 @@ public class PostService {
                 throw new RuntimeException();
             } else {
                 if (post.getParent() != 0 && parentPost != null && parentPost.getThread() != thread.getId()){
-                    System.out.println(String.valueOf(parentPost.getThread()) + String.valueOf(post.getThread()));
                     throw new RuntimeException();
                 }
                 if(post.getParent() != 0) {
