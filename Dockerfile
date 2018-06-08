@@ -27,16 +27,17 @@ RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba
 # And add ``listen_addresses`` to ``/etc/postgresql/$PGVER/main/postgresql.conf``
 RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "fsync = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
 
 RUN echo "shared_buffers = 512MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "effective_cache_size = 1024MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "work_mem = 8MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "effective_cache_size = 768MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "work_mem = 32MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "maintenance_work_mem = 128MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "wal_buffers = 1MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "wal_buffers = 8MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 #RUN echo "effective_io_concurrency = 200" >> /etc/postgresql/$PGVER/main/postgresql.conf
-#RUN echo "min_wal_size = 1GB" >> /etc/postgresql/$PGVER/main/postgresql.conf
-#RUN echo "max_wal_size = 2GB" >> /etc/postgresql/$PGVER/main/postgresql.conf
-#RUN echo "checkpoint_completion_target = 0.7" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "min_wal_size = 1GB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "max_wal_size = 2GB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "checkpoint_completion_target = 0.7" >> /etc/postgresql/$PGVER/main/postgresql.conf
 # Expose the PostgreSQL port
 EXPOSE 5432
 
