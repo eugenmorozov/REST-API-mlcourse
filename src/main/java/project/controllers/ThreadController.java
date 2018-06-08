@@ -105,7 +105,7 @@ public class ThreadController {
         ThreadModel thread = threadService.getThreadBySlugOrId(slugOrId);
         if(since == null){
             if(desc) {
-                since = 999999;
+                since = 2000000 ;
             }else{
                 since = 0;
             }

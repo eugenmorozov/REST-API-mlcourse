@@ -128,14 +128,14 @@ public class PostService {
             String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts " +
                     " WHERE thread = ? ";
             if(desc){
-                if(since != 0 && since != 999999){
+                if(since != 0 && since != 2000000){
                     getQuery += "and path < (select path from posts where id  = ?)";
                 }else{
                     getQuery += "and path[1] < ? ";
                 }
                 getQuery+= "order by path DESC ";
             }else{
-                if(since != 0 && since != 999999){
+                if(since != 0 && since != 2000000){
                     getQuery += "and path > (select path from posts where id  = ?)";
                 }else{
                     getQuery += "and path[1] > ? ";
@@ -150,13 +150,13 @@ public class PostService {
             String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts " +
                     " where thread = ? and path[1] in (select distinct path[1] from posts ";
             if(desc){
-                if(since != 0 && since != 999999) {
+                if(since != 0 && since != 2000000) {
                     getQuery += "where thread = ? and path[1] < (select path[1] from posts where id = ?) order by path[1] desc limit ?) order by path[1]  DESC ";
                 }else{
                     getQuery += "where thread = ? and path[1] <  ? order by path[1] desc limit ?) order by path[1]  DESC ";
                 }
             }else{
-                if(since != 0 && since != 999999) {
+                if(since != 0 && since != 2000000) {
                     getQuery += " where thread = ? and path[1] > (select path[1] from posts where id = ?) order by path[1] limit ?) order by path[1] ";
                 }else{
                     getQuery += "where thread = ? and path[1] > ? order by path[1] limit ?) order by path[1]  ";
