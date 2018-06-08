@@ -38,6 +38,9 @@ RUN echo "wal_buffers = 8MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "min_wal_size = 1GB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "max_wal_size = 2GB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "checkpoint_completion_target = 0.7" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "cpu_tuple_cost = 0.0030" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "cpu_index_tuple_cost = 0.0010" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "cpu_operator_cost = 0.0005" >> /etc/postgresql/$PGVER/main/postgresql.conf
 # Expose the PostgreSQL port
 EXPOSE 5432
 
