@@ -63,7 +63,7 @@ public class PostService {
     public List<PostModel> CreatePosts(List<PostModel> posts, ThreadModel thread){
 
         String createQuery = "INSERT INTO posts (author, created, forum, id, isEdited, message, parent, path, thread )" +
-                " VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?)";
+                " VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?) ";
         String currentTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         for(PostModel post : posts) {
