@@ -38,7 +38,7 @@ public class ThreadService {
         UserModel user = userService.getUserByNickname(thread.getAuthor());
 
         jdbcTemplate.update(
-                "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING ",
+                "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?::citext,?::citext,?::citext) ON CONFLICT DO NOTHING ",
                 user.getAbout(),
                 user.getFullname(),
                 user.getNickname(),

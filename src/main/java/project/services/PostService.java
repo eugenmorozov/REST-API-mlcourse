@@ -5,12 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import java.time.format.DateTimeFormatter;
 import java.time.ZonedDateTime;
-import java.util.TimeZone;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -65,29 +63,25 @@ public class PostService {
         String createQuery = "INSERT INTO posts (author, created, forum, id, isEdited, message, parent, path, thread )" +
                 " VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?) ";
         String currentTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+        List<UserModel> users = new ArrayList<>();
 
         for(PostModel post : posts) {
             UserModel user = userService.getUserByNickname(post.getAuthor());
             if(user == null){
                 return null;
             }
-
-            jdbcTemplate.update(
-                    "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING ",
-                    user.getAbout(),
-                    user.getFullname(),
-                    user.getNickname(),
-                    user.getEmail(),
-                    thread.getForum()
-            );
+            users.add(user);
 
             Array path = null;
             PostModel parentPost = getPostById( post.getParent() );
             int id = generateId();//TODO убрать
+            System.out.println("FUCKING POST IS:  "+String.valueOf(post.getParent()));
             if( post.getParent() != 0  && parentPost == null){
+                System.out.println("err caused by null parnt");
                 throw new RuntimeException();
             } else {
                 if (post.getParent() != 0 && parentPost != null && parentPost.getThread() != thread.getId()){
+                    System.out.println("err caused by thread missmatch");
                     throw new RuntimeException();
                 }
                 if(post.getParent() != 0) {
@@ -113,11 +107,29 @@ public class PostService {
                 );
             }
         }
+
         jdbcTemplate.update(
                 "UPDATE forums SET posts = forums.posts + ? WHERE slug = ?::citext",
                 posts.size(),
                 thread.getForum()
         );
+
+        for(UserModel user: users){
+            try {
+                jdbcTemplate.update(
+                        "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?::CITEXT,?::CITEXT,?::CITEXT) ON CONFLICT DO NOTHING ",
+                        user.getAbout(),
+                        user.getFullname(),
+                        user.getNickname(),
+                        user.getEmail(),
+                        thread.getForum()
+                );
+            }catch(DataAccessException err){
+                System.out.println("exception caused by forum_users inception");
+                System.out.println("Authors:  "+user.getNickname()+" and "+ user.getNickname());
+                System.out.println("forum is "+ thread.getForum());
+            }
+        }
         return posts;
     }
 
