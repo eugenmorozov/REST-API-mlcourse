@@ -71,17 +71,19 @@ public class PostService {
             if(user == null){
                 return null;
             }
+
             jdbcTemplate.update(
-                    "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?,?,?)",
+                    "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING ",
                     user.getAbout(),
                     user.getFullname(),
                     user.getNickname(),
                     user.getEmail(),
                     thread.getForum()
             );
+
             Array path = null;
             PostModel parentPost = getPostById( post.getParent() );
-            int id = generateId();//TODO убрать нахуй!
+            int id = generateId();//TODO убрать
             if( post.getParent() != 0  && parentPost == null){
                 throw new RuntimeException();
             } else {
@@ -95,7 +97,7 @@ public class PostService {
                 post.setForum(thread.getForum());
                 post.setIsEdited(false);
                 post.setThread(thread.getId());
-                post.setId(id);//TODO: YBRAT NAXYI
+                post.setId(id);//TODO: YBRAT
                 jdbcTemplate.update(
                         createQuery,
                         post.getAuthor(),

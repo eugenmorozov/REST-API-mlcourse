@@ -36,14 +36,16 @@ public class ThreadService {
                 thread.getForum()
         );
         UserModel user = userService.getUserByNickname(thread.getAuthor());
+
         jdbcTemplate.update(
-                "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?,?,?)",
+                "INSERT INTO forum_users (about, fullname,nickname, email, forum) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING ",
                 user.getAbout(),
                 user.getFullname(),
                 user.getNickname(),
                 user.getEmail(),
                 thread.getForum()
         );
+        //git add -A
         //thread.setId(generateId());
         //System.out.println("OH SHIT                  "+String.valueOf(thread.getId()));
         //int userId = userService.getUserIdByNickname(thread.getAuthor());
