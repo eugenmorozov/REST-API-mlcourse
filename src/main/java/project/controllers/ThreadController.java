@@ -20,12 +20,10 @@ import java.util.List;
 public class ThreadController {
     private PostService postService;
     private ThreadService threadService;
-    private UserService userService;
 
-    public ThreadController(PostService postService, ThreadService threadService, UserService userService) {
+    public ThreadController(PostService postService, ThreadService threadService) {
         this.postService = postService;
         this.threadService = threadService;
-        this.userService = userService;
     }
 
     @GetMapping(path = "/{slug_or_id}/details")
@@ -62,7 +60,6 @@ public class ThreadController {
             if(thread != null) {
                 vote.setThread(thread.getId());
                 try{
-
                     return ResponseEntity.status(HttpStatus.OK).body(threadService.setVote(vote));
                 }catch(RuntimeException err){
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorModel("threads not found"));

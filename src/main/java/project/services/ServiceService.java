@@ -19,7 +19,9 @@ public class ServiceService {
     }
 
     public void clearAll(){
-        jdbcTemplate.update("TRUNCATE forums, forum_users, users, threads, posts, votes");
+        jdbcTemplate.update(
+                "TRUNCATE forums, forum_users, users, threads, posts, votes"
+        );
     }
 
     public ServiceModel getInfo(){

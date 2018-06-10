@@ -40,30 +40,40 @@ public class PostService {
 
     public PostModel getPostById(int id){
         try {
-            String getQuery = "select author, created, forum, id, isedited, message, parent, thread from posts where id = ?";
-            return jdbcTemplate.queryForObject(getQuery, new Object[]{id}, new PostService.PostRowMapper());
+            return jdbcTemplate.queryForObject(
+                    "select author, created, forum, id, isedited, message, parent, thread from posts where id = ?",
+                    new Object[]{id},
+                    new PostService.PostRowMapper()
+            );
         }catch(DataAccessException error){
             return null;
         }
     }
 
     private Array getPathById(Integer id) {
-        String sql = "SELECT path FROM posts WHERE id = ?";
-        return  jdbcTemplate.queryForObject(sql, Array.class, id);
+        return  jdbcTemplate.queryForObject(
+                "SELECT path FROM posts WHERE id = ?",
+                Array.class,
+                id
+        );
     }
 
     private Integer generateId(){
         return jdbcTemplate.
-            queryForObject("SELECT nextval(pg_get_serial_sequence('posts', 'id'))", Integer.class);
+            queryForObject(
+                    "SELECT nextval(pg_get_serial_sequence('posts', 'id'))",
+                    Integer.class
+            );
     }
 
     @Transactional
     public List<PostModel> CreatePosts(List<PostModel> posts, ThreadModel thread){
-
-        String createQuery = "INSERT INTO posts (author, created, forum, id, isEdited, message, parent, path, thread )" +
-                " VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?) ";
-        String currentTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         List<UserModel> users = new ArrayList<>();
+        String createQuery = "INSERT INTO posts " +
+                "(author, created, forum, id, isEdited, message, parent, path, thread )" +
+                " VALUES (?, ?::TIMESTAMPTZ, ?, ?, ?, ?, ?, array_append(?, ?::INTEGER), ?) ";
+
+        String currentTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         for(PostModel post : posts) {
             UserModel user = userService.getUserByNickname(post.getAuthor());
@@ -71,11 +81,11 @@ public class PostService {
                 return null;
             }
             users.add(user);
-
             Array path = null;
+
             PostModel parentPost = getPostById( post.getParent() );
             int id = generateId();//TODO убрать
-            System.out.println("FUCKING POST IS:  "+String.valueOf(post.getParent()));
+
             if( post.getParent() != 0  && parentPost == null){
                 System.out.println("err caused by null parnt");
                 throw new RuntimeException();
@@ -91,7 +101,7 @@ public class PostService {
                 post.setForum(thread.getForum());
                 post.setIsEdited(false);
                 post.setThread(thread.getId());
-                post.setId(id);//TODO: YBRAT
+                post.setId(id);
                 jdbcTemplate.update(
                         createQuery,
                         post.getAuthor(),
@@ -138,9 +148,9 @@ public class PostService {
                                     int since,
                                     String sort,
                                     boolean desc) {
+        //ITS HARDCODE HELL, BE AWARE
         if(sort.equals("tree")){
-            String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts " +
-                    " WHERE thread = ? ";
+            String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts WHERE thread = ? ";
             if(desc){
                 if(since != 0 && since != 2000000){
                     getQuery += "and path < (select path from posts where id  = ?)";
@@ -225,8 +235,8 @@ public class PostService {
         return oldPost;
     }
 
-    public PostFullModel getFullModel(int id,
-                                      String related){
+    public PostFullModel getFullPost(int id,
+                                     String related){
 
         PostFullModel answer = new PostFullModel(getPostById(id));
         if(answer.getPost() == null){
@@ -250,7 +260,6 @@ public class PostService {
     }
 
     public static class PostRowMapper implements RowMapper<PostModel> {
-        @Override
         public PostModel mapRow(ResultSet resSet, int rowNum) throws SQLException {
             Timestamp timestamp = resSet.getTimestamp("created");
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");

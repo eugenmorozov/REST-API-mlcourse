@@ -15,11 +15,9 @@ import project.models.UserModel;
 @Repository
 public class ForumService {
     private JdbcTemplate jdbcTemplate;
-    private UserService userService;
 
-    public ForumService(JdbcTemplate jdbcTemplate, UserService userService) {
+    public ForumService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.userService = userService;
     }
 
     public ForumModel createForum(ForumModel forum){
@@ -36,15 +34,17 @@ public class ForumService {
 
     public ForumModel getForumBySlug(String slug){
         try {
-            String getQuery = "select posts, slug, threads, title, nickname from forums where slug = ?::citext";
-            return jdbcTemplate.queryForObject(getQuery, new Object[]{slug}, new ForumService.ForumRowMapper());
+            return jdbcTemplate.queryForObject(
+                    "select posts, slug, threads, title, nickname from forums where slug = ?::citext",
+                    new Object[]{slug},
+                    new ForumService.ForumRowMapper()
+            );
         }catch(DataAccessException error){
             return null;
         }
     }
 
     public static class ForumRowMapper implements RowMapper<ForumModel> {
-        @Override
         public ForumModel mapRow(ResultSet resSet, int rowNum) throws SQLException {
             return new ForumModel(
                     resSet.getInt("posts"),

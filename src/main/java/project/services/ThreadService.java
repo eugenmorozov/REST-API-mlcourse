@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.TimeZone;
 
 import org.springframework.dao.DataAccessException;
@@ -77,8 +76,11 @@ public class ThreadService {
 
     public ThreadModel getThreadBySlug(String slug){
         try {
-            String getQuery = "select * from threads where slug = ?::citext";
-            return jdbcTemplate.queryForObject(getQuery, new Object[]{slug}, new ThreadService.ThreadRowMapper());
+            return jdbcTemplate.queryForObject(
+                    "select * from threads where slug = ?::citext",
+                    new Object[]{slug},
+                    new ThreadService.ThreadRowMapper()
+            );
         }catch(DataAccessException error){
             return null;
         }
@@ -117,10 +119,6 @@ public class ThreadService {
                     new ThreadRowMapper()
             );
         }
-
-        //System.out.println(query);
-
-
     }
 
     public ThreadModel getThreadBySlugOrId(
@@ -170,7 +168,7 @@ public class ThreadService {
         updateVotesById(vote.getThread());
         return getThreadBySlugOrId(String.valueOf(vote.getThread()));
     }
-    public void updateVotesById (int thread){
+    private void updateVotesById (int thread){
         int rating = jdbcTemplate.queryForObject(
                 "SELECT sum(voice) FROM votes WHERE thread = ?",
                 new Object[]{thread},
@@ -181,6 +179,7 @@ public class ThreadService {
                 thread
         );
     }
+
     public ThreadModel updateThread( ThreadModel thread, ThreadModel oldThread){
         String createQuery = "UPDATE threads SET ( author, created, forum, message, slug, title) = (?,?::timestamptz,?,?,?,?) WHERE slug = ?::citext";
         if ( thread.getAuthor() != null){
@@ -215,7 +214,7 @@ public class ThreadService {
 
     }
 
-    public VoteModel getVote ( VoteModel vote){
+    private VoteModel getVote (VoteModel vote){
         try{
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM votes WHERE nickname = ?::citext AND  thread = ?",
@@ -229,7 +228,6 @@ public class ThreadService {
 
 
     public static class VoteRowMapper implements RowMapper<VoteModel>{
-        @Override
         public VoteModel mapRow(ResultSet resultSet, int rowNum) throws SQLException{
             return new VoteModel(
                     resultSet.getString("nickname"),
@@ -240,8 +238,6 @@ public class ThreadService {
     }
 
     public static class ThreadRowMapper implements RowMapper<ThreadModel> {
-        @Override
-        @Nullable
         public ThreadModel mapRow(ResultSet resSet, int rowNum) throws SQLException {
             Timestamp timestamp = resSet.getTimestamp("created");
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
