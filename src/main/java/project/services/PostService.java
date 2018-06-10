@@ -168,7 +168,10 @@ public class PostService {
             }
             getQuery += " limit ? ";
             System.out.println(getQuery);
-            return (ArrayList<PostModel>) jdbcTemplate.query(getQuery,new Object[]{id, since, limit}, new PostRowMapper());
+            return (ArrayList<PostModel>) jdbcTemplate.query(
+                    getQuery,
+                    new Object[]{id, since, limit},
+                    new PostRowMapper());
 
         }else if(sort.equals("parent_tree")){
             String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts " +
@@ -188,7 +191,10 @@ public class PostService {
             }
             getQuery += " , path ";
             System.out.println(getQuery);
-            return (ArrayList<PostModel>) jdbcTemplate.query(getQuery,new Object[]{id, id, since, limit}, new PostRowMapper());
+            return (ArrayList<PostModel>) jdbcTemplate.query(
+                    getQuery,
+                    new Object[]{id, id, since, limit},
+                    new PostRowMapper());
         }
 
         String getQuery = "SELECT author, created, forum, id, isedited, message, parent, thread FROM posts WHERE thread = ? ";
@@ -199,7 +205,11 @@ public class PostService {
         }
         getQuery += " LIMIT ? ";
         System.out.println(getQuery);
-        return (ArrayList<PostModel>) jdbcTemplate.query(getQuery,new Object[]{id, since, limit}, new PostRowMapper());
+        return (ArrayList<PostModel>) jdbcTemplate.query(
+                getQuery,
+                new Object[]{id, since, limit},
+                new PostRowMapper()
+        );
 
     }
 

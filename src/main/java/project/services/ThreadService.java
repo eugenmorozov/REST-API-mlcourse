@@ -149,12 +149,12 @@ public class ThreadService {
     public ThreadModel setVote(VoteModel vote){
         if (getVote(vote) != null) {
             jdbcTemplate.update(
-                    "UPDATE votes SET (nickname, thread, voice) = (?, ?, ?) WHERE nickname = ?::citext AND thread = ?",
+                    "UPDATE votes SET (nickname, thread, voice) = (?, ?, ?) WHERE thread = ? AND  nickname = ?::citext",
                     vote.getNickname(),
                     vote.getThread(),
                     vote.getVoice(),
-                    vote.getNickname(),
-                    vote.getThread()
+                    vote.getThread(),
+                    vote.getNickname()
             );
         } else {
             System.out.println(String.valueOf(vote.getThread()));
@@ -217,8 +217,8 @@ public class ThreadService {
     private VoteModel getVote (VoteModel vote){
         try{
             return jdbcTemplate.queryForObject(
-                    "SELECT * FROM votes WHERE nickname = ?::citext AND  thread = ?",
-                    new Object[]{ vote.getNickname(), vote.getThread()},
+                    "SELECT * FROM votes WHERE thread = ? AND nickname = ?::citext ",
+                    new Object[]{ vote.getThread(), vote.getNickname()},
                     new ThreadService.VoteRowMapper()
             );
         }catch (DataAccessException error){
