@@ -30,7 +30,7 @@ RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.co
 RUN echo "fsync = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
 #RUN echo "full_page_writes  = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
 
-RUN echo "shared_buffers = 512MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "shared_buffers = 128MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "effective_cache_size = 768MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "work_mem = 8MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "maintenance_work_mem = 128MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
